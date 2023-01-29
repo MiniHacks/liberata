@@ -63,10 +63,10 @@ async def get_only_titles(request: ExtractTextRequest) -> list[BookIdeaRow]:
 
         asyncio.gather(*[wrapper(coro) for coro in coros])
 
-    precaching([
-        get_or_insert_cache_book_details(BookDetailsRequest(book_title=row.title, book_author=row.author, zipcode=request.zipcode))
-        for row in ret
-    ])
+    # precaching([
+    #     get_or_insert_cache_book_details(BookDetailsRequest(book_title=row.title, book_author=row.author, zipcode=request.zipcode))
+    #     for row in ret
+    # ])
 
     return ret
 
