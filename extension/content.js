@@ -35,9 +35,10 @@ window.onload = async (event) => {
 
         let dafunc = () => {
           let textNode = document.getElementById(random_ass_id);
+          textNode.onmouseover = null;
           let bookTitle = find;
-            const node = document.createElement("div");
-            node.innerHTML = `
+          const node = document.createElement("div");
+          node.innerHTML = `
             <div class="card" style="position: absolute; z-index: 100" id="${random_ass_id}-modal">
               <button class="delete" style="position: absolute; top: 0; right: 0; margin: 5px" id="${random_ass_id}-deletebtn"></button>
               <div class="card-content">
@@ -54,17 +55,15 @@ window.onload = async (event) => {
             </div>
           `;
 
-            console.log("mouse over :(")
+          console.log("mouse over :(")
 
-            textNode.appendChild(node);
+          textNode.appendChild(node);
 
-            document.getElementById(`${random_ass_id}-deletebtn`).onclick = function () {
-              console.log("deleting ")
-              textNode.onmouseenter = dafunc;
-              textNode.removeChild(node);
-            };
-
-            textNode.onmouseover = null;
+          document.getElementById(`${random_ass_id}-deletebtn`).onclick = function () {
+            console.log("deleting ")
+            textNode.removeChild(node);
+            textNode.onmouseover = dafunc;
+          };
         };
         document.getElementById(random_ass_id).onmouseover = dafunc;
       } else {
