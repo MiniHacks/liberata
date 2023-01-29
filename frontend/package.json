@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "lint:build": "mv out/_next out/assets && sed -i 's/\\\\/_next/\\\\/assets/g' out/**.html",
-    "build": "next build && next export && npm run lint:build && cp ../extension/** out/",
+    "lint:build": "mv out/_next out/assets && sed -i 's/\\\\/_next/\\\\/assets/g' out/**.html && cp ../extension/** out/",
+    "build": "whoami && next build && next export && npm run lint:build",
     "start": "next start",
     "lint": "next lint"
   },
