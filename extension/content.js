@@ -33,16 +33,51 @@ window.onload = async (event) => {
   let respdata = await res.json();
   console.log(respdata)
 
-  let recursive_find_replace = (node, find, parent = null) => {
-    if (node.innerText?.toLowerCase().includes(find.og_text.toLowerCase()) || node.nodeValue?.toLowerCase().includes(find.og_text.toLowerCase())) {
-      console.log(node)
-      if (node.nodeType === Node.TEXT_NODE) {
-        var text = node.nodeValue;
+  const checkstroverlap = (str1, str2) => {
+    if(!str1 || !str2) return 0;
+    const min_len = Math.min(str1.length, str2.length);
+    for(let i = 1; i < min_len; i++) {
+      let last_i_of_str1 = str1.substring(str1.length - i);
+      let first_i_of_str2 = str2.substring(0, i);
+      if (first_i_of_str2 == last_i_of_str1) {
+        return i
+      }
+    }
+    return 0;
+  }
 
+  let recursive_find_replace = (node, find, parent = null) => {
+    const forwardoverlap = checkstroverlap(find.og_text.toLowerCase().trim(), (node.innerText || node.nodeValue)?.toLowerCase()?.trim());
+    const backwardoverlap = checkstroverlap((node.innerText || node.nodeValue)?.toLowerCase()?.trim(), find.og_text.toLowerCase().trim());
+
+    if (node.innerText?.toLowerCase().includes(find.og_text.toLowerCase()) 
+    || node.nodeValue?.toLowerCase().includes(find.og_text.toLowerCase()) 
+    || forwardoverlap > 2 
+    || backwardoverlap > 2
+    ) {
+      if(find.og_text.includes("Pilgrim")) { console.log(find.og_text, node, node.innerText || node.nodeValue) }
+      if (node.nodeType === Node.TEXT_NODE) {
+        let bigger_overlap = Math.max(forwardoverlap, backwardoverlap);
+        let is_forwards = bigger_overlap === forwardoverlap; // forwards means that og text is to left of node text
+        // backwards means that node text is left of og text
+        let nodeText = node.nodeValue;        
         let random_ass_id = "xxxxxxxxxxxxxxx".replace(/x/g, () => (Math.floor(Math.random() * 36)).toString(36));
-        var boldText = `<span style='background-color: pink' id='${random_ass_id}'>${find.og_text}</span>`;
-        var newHtml = text.toLowerCase().replace(find.og_text.toLowerCase(), boldText);
-        var newNode = document.createElement('span');
+        
+        let boldText = `<span style='background-color: pink' id='${random_ass_id}'>${find.og_text}</span>`;
+        let newHtml = nodeText.toLowerCase().replace(find.og_text.toLowerCase(), boldText);
+        if (newHtml == nodeText.toLowerCase()) {
+
+          let front = is_forwards ? "" : nodeText;
+          let back = is_forwards ? nodeText : "";
+  
+          // last overlap letters of front == first overlap letters of back
+          
+          let to_highlight = back.substring(0, bigger_overlap);
+  
+          let boldText = `${front.substring(0, front.length - bigger_overlap)}<span style='background-color: pink' id='${random_ass_id}'>${to_highlight}</span>${back.substring(bigger_overlap)}`;
+          newHtml = boldText;
+        }
+        let newNode = document.createElement('span');
         newNode.innerHTML = newHtml;
         parent.replaceChild(newNode, node);
 
@@ -118,7 +153,8 @@ window.onload = async (event) => {
           )();
 
         };
-        document.getElementById(random_ass_id).onmouseover = show_modal_with_book_details;
+        
+        setTimeout(() => document.getElementById(random_ass_id).onmouseover = show_modal_with_book_details, 500)
       } else {
 
         for (const child of node.childNodes) {
