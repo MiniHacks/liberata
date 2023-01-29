@@ -37,15 +37,37 @@ async def get_a_book(book_title: str, zip_code: str | None) -> list[BookFromWorl
 
     async with async_playwright() as p:
         for browser_type in [p.chromium]:
-            browser = await browser_type.launch(headless=True)
+            browser = await browser_type.launch(headless=False)
             context = await browser.new_context()
+
+
+            btn = None
             page = await context.new_page()
+            if zip_code is not None:
+                await page.goto(f'https://worldcat.org/')
+
+                if btn := await page.wait_for_selector("#onetrust-accept-btn-handler", timeout=1000.0):
+                    await btn.click()
+                
+                loc_selector = await page.query_selector("#__next > header > nav > div > button#location-confirmer-desktop > span > div")
+                await loc_selector.click()
+
+                textbox = await page.wait_for_selector("div > div > div > div > div > div > input")
+                await textbox.click()
+                await textbox.type(zip_code, delay=300)
+                await textbox.click()
+                await page.wait_for_selector("body > div.MuiAutocomplete-popper")
+                await textbox.press('Enter')
+
+                btn = await page.query_selector("body > div > div > div > div > div > button > span > div")
+                await btn.click()
+                
             try:
                 await page.goto(f'https://worldcat.org/search?q={url_encoded_book_title}')
             except TimeoutError:
                 print(f"uh oh timed out on {book_title}")
                 return []
-            if btn := await page.wait_for_selector("#onetrust-accept-btn-handler", timeout=000.0):
+            if btn is None and (btn := await page.wait_for_selector("#onetrust-accept-btn-handler", timeout=1000.0)):
                 await btn.click()
             list = await page.wait_for_selector("main > div > div > ol", timeout = 5000.0)
             if list is None:
