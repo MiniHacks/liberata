@@ -36,9 +36,9 @@ class ExtractTextRequest(BaseModel):
 get_title_hash = {}
 
 @app.post("/get_only_titles")
-def get_only_titles(request: ExtractTextRequest) -> list[str]:
+async def get_only_titles(request: ExtractTextRequest) -> list[str]:
     if request not in get_title_hash:
-        book_titles = list(set(extract_book_titles(request.text)))
+        book_titles = list(set(await extract_book_titles(request.text)))
 
         if book_titles == ["None"]:
             result = []
@@ -52,7 +52,13 @@ def get_only_titles(request: ExtractTextRequest) -> list[str]:
     else:
         print("Cached!!!")
 
-    return get_title_hash[request]
+    ret = get_title_hash[request]
+    asyncio.gather(*[
+        get_or_insert_cache_book_details(BookDetailsRequest(book_title=title, zipcode=request.zipcode))
+        for title in ret
+    ])
+
+    return ret
 
 class BookDetailsRequest(BaseModel):
     book_title: str
@@ -62,17 +68,25 @@ class BookDetailsRequest(BaseModel):
     class Config:
         frozen = True
 
+    
 
 get_book_details_cache = {}
-@app.post("/book_details")
-async def book_details(request: BookDetailsRequest) -> list[BookFromWorldCat]:
-    if request not in get_book_details_cache:
 
+async def get_or_insert_cache_book_details(request: BookDetailsRequest) -> list[BookFromWorldCat]:
+    if request not in get_book_details_cache:
+        print("oops we have to fetch the following title: " , request.book_title)
         get_book_details_cache[request] = await get_a_book(request.book_title, request.zipcode)
+        print("finished fetching the following ttile: " , request.book_title)
     else:
-        print("cached!!!!!")
+        print("cached the title!!!!!", request.book_title)
     
     return get_book_details_cache[request]
+
+
+@app.post("/book_details")
+async def book_details(request: BookDetailsRequest) -> list[BookFromWorldCat]:
+    return await get_or_insert_cache_book_details(request)
+    
 
 @app.post("/extract_titles")
 async def extract_text(request: ExtractTextRequest) -> dict[str, list[BookFromWorldCat]]:

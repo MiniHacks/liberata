@@ -1,8 +1,11 @@
 // Listen for messages
 console.log("Parsing Site Info for Library Books.");
 
+const URL = "http://localhost:8000";
+// const URL = "https://project2023library-qwqi2iy3qa-uc.a.run.app";
+
 window.onload = async (event) => {
-  let data = { text: document.body.innerText };
+  let data = { text: document.body.innerText, zipcode: "55414" };
 
   const common_fetch_params = {
     mode: "cors", // no-cors, *cors, same-origin
@@ -15,7 +18,7 @@ window.onload = async (event) => {
     referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
   };
 
-  let res = await fetch("http://localhost:8000/get_only_titles", {
+  let res = await fetch(`${URL}/get_only_titles`, {
     method: "POST", // *GET, POST, PUT, DELETE, etc.
     body: JSON.stringify(data), // body data type must match "Content-Type" header,
     ...common_fetch_params
@@ -86,11 +89,11 @@ window.onload = async (event) => {
 
           // 5. Make request to backend to get book details
           (async () => {
-            let res = await fetch("http://localhost:8000/book_details", {
+            let res = await fetch(`${URL}/book_details`, {
               method: "POST", // *GET, POST, PUT, DELETE, etc.
               body: JSON.stringify({
                 book_title: bookTitle,
-                zipcode: null
+                zipcode: "55414"
               }), // body data type must match "Content-Type" header,
               ...common_fetch_params
             });

@@ -10,8 +10,8 @@ except:
     raise
 
 
-def extract_book_titles(text_block: str) -> list[str]:
-    result = openai.Completion.create(
+async def extract_book_titles(text_block: str) -> list[str]:
+    result = await openai.Completion.acreate(
         model = "text-davinci-003",
         prompt = "Identify the book titles that are in the following block of text. Do not provide book titles that are not mentioned in the text. Do not include author names. Only repeat text verbatim. Separate titles with commas.\n"
                  "Text block: \n"

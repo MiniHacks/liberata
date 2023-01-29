@@ -1,12 +1,9 @@
-
-
 import asyncio
-from pprint import pprint
 from typing import List
 from pydantic import BaseModel
 from urllib.parse import quote_plus
 from playwright.async_api import async_playwright, Page, ElementHandle
-import functools
+import os
 
 class Library(BaseModel):
     distance_num_miles: float
@@ -20,24 +17,12 @@ class BookFromWorldCat(BaseModel):
     book_title: str
     book_author: str
 
-@functools.wraps
-def cache_decorator(func):
-    cache = {}
-    async def wrapped(book_title: str, zip_code: str | None = None):
-        if book_title not in cache:
-            result = await func(book_title, zip_code)
-            cache[book_title] = result
-        return cache[book_title]
-
-    return wrapped
-
-@cache_decorator
 async def get_a_book(book_title: str, zip_code: str | None) -> list[BookFromWorldCat]:
     url_encoded_book_title = quote_plus(book_title)
 
     async with async_playwright() as p:
         for browser_type in [p.chromium]:
-            browser = await browser_type.launch(headless=False)
+            browser = await browser_type.launch(headless="PRODUCTION" in os.environ)
             context = await browser.new_context()
 
 
@@ -49,12 +34,13 @@ async def get_a_book(book_title: str, zip_code: str | None) -> list[BookFromWorl
                 if btn := await page.wait_for_selector("#onetrust-accept-btn-handler", timeout=1000.0):
                     await btn.click()
                 
-                loc_selector = await page.query_selector("#__next > header > nav > div > button#location-confirmer-desktop > span > div")
+                loc_selector = await page.wait_for_selector("#__next > header > nav > div > button#location-confirmer-desktop > span > div", timeout=2000.0)
                 await loc_selector.click()
 
-                textbox = await page.wait_for_selector("div > div > div > div > div > div > input")
+                textbox = await page.wait_for_selector("div > div > div > div > div > div > input", timeout=500.0)
                 await textbox.click()
                 await textbox.type(zip_code, delay=300)
+                await asyncio.sleep(0.5)
                 await textbox.click()
                 await page.wait_for_selector("body > div.MuiAutocomplete-popper")
                 await textbox.press('Enter')
