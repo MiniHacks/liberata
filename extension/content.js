@@ -34,14 +34,14 @@ window.onload = async (event) => {
   console.log(respdata)
 
   let recursive_find_replace = (node, find, parent = null) => {
-    if (node.innerText?.toLowerCase().includes(find.toLowerCase()) || node.nodeValue?.toLowerCase().includes(find.toLowerCase())) {
+    if (node.innerText?.toLowerCase().includes(find.og_text.toLowerCase()) || node.nodeValue?.toLowerCase().includes(find.og_text.toLowerCase())) {
       console.log(node)
       if (node.nodeType === Node.TEXT_NODE) {
         var text = node.nodeValue;
 
         let random_ass_id = "xxxxxxxxxxxxxxx".replace(/x/g, () => (Math.floor(Math.random() * 36)).toString(36));
-        var boldText = `<span style='background-color: pink' id='${random_ass_id}'>${find}</span>`;
-        var newHtml = text.toLowerCase().replace(find.toLowerCase(), boldText);
+        var boldText = `<span style='background-color: pink' id='${random_ass_id}'>${find.og_text}</span>`;
+        var newHtml = text.toLowerCase().replace(find.og_text.toLowerCase(), boldText);
         var newNode = document.createElement('span');
         newNode.innerHTML = newHtml;
         parent.replaceChild(newNode, node);
@@ -52,7 +52,7 @@ window.onload = async (event) => {
 
           // 2. When the modal is active, stop us from producing another one
           textNode.onmouseover = null;
-          let bookTitle = find;
+          let bookTitle = find.title;
 
           // We precision place our modal to be right next to the text that the user moused over
           let { top, left, height, ...rest } = textNode.getBoundingClientRect();
@@ -71,7 +71,7 @@ window.onload = async (event) => {
               <div class="card-content">
                   <div class="media-content">
                     <p class="title is-4">${bookTitle}</p>
-                    <p class="subtitle is-6" id="${random_ass_id}-authornames"><progress class="progress is-small" max="100">50%</progress></p>
+                    <p class="subtitle is-6" id="${random_ass_id}-authornames">${find.author || '<progress class="progress is-small" max="100">50%</progress>'}</p>
                   </div>
 
                   <div class="content">

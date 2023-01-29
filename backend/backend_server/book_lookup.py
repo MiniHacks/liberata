@@ -17,8 +17,12 @@ class BookFromWorldCat(BaseModel):
     book_title: str
     book_author: str
 
-async def get_a_book(book_title: str, zip_code: str | None) -> list[BookFromWorldCat]:
-    url_encoded_book_title = quote_plus(book_title)
+async def get_a_book(book_title: str, book_author: str | None, zip_code: str | None) -> list[BookFromWorldCat]:
+    query: str = f"ti:{book_title}"
+    if book_author is not None:
+        query += f" AND au:{book_author}"
+    
+    query = quote_plus(query)
 
     async with async_playwright() as p:
         for browser_type in [p.chromium]:
@@ -39,7 +43,7 @@ async def get_a_book(book_title: str, zip_code: str | None) -> list[BookFromWorl
 
                 textbox = await page.wait_for_selector("div > div > div > div > div > div > input", timeout=500.0)
                 await textbox.click()
-                await textbox.type(zip_code, delay=300)
+                await page.type("body", zip_code, delay=300)
                 await asyncio.sleep(0.5)
                 await textbox.click()
                 await page.wait_for_selector("body > div.MuiAutocomplete-popper")
@@ -49,7 +53,7 @@ async def get_a_book(book_title: str, zip_code: str | None) -> list[BookFromWorl
                 await btn.click()
                 
             try:
-                await page.goto(f'https://worldcat.org/search?q={url_encoded_book_title}')
+                await page.goto(f'https://worldcat.org/search?q={query}')
             except TimeoutError:
                 print(f"uh oh timed out on {book_title}")
                 return []
