@@ -44,11 +44,9 @@ async def get_a_book(book_title: str, zip_code: str | None) -> list[BookFromWorl
             except TimeoutError:
                 print(f"uh oh timed out on {book_title}")
                 return []
-            await asyncio.sleep(1)
-            if btn := await page.query_selector("#onetrust-accept-btn-handler"):
+            if btn := await page.wait_for_selector("#onetrust-accept-btn-handler", timeout=1000.0):
                 await btn.click()
-                await asyncio.sleep(1)
-            list = await page.query_selector("main > div > div > ol")
+            list = await page.wait_for_selector("main > div > div > ol", timeout = 1000.0)
             if list is None:
                 return []
             links = await list.query_selector_all("li > div > div > div > div > div > h2 > div > a")
