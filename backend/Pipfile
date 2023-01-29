@@ -8,6 +8,7 @@ fastapi = "*"
 uvicorn = {extras = ["standard"], version = "*"}
 openai = "*"
 playwright = "*"
+tiktoken = "*"
 
 [dev-packages]
 
