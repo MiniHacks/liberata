@@ -1,11 +1,10 @@
 // Listen for messages
 console.log("Parsing Site Info for Library Books.");
 
-window.onload = (event) => {
-  const data = { text: document.body.innerText };
+window.onload = async (event) => {
+  let data = { text: document.body.innerText };
 
-  try {
-    pr = fetch("http://localhost:8000/extract_titles", {
+  let res = await fetch("http://localhost:8000/extract_titles", {
       method: "POST", // *GET, POST, PUT, DELETE, etc.
       mode: "cors", // no-cors, *cors, same-origin
       cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
@@ -17,18 +16,11 @@ window.onload = (event) => {
       redirect: "follow", // manual, *follow, error
       referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
       body: JSON.stringify(data), // body data type must match "Content-Type" header
-    })
-    pr.then((response) => {
-      console.log(response.status)
-      return response.json()
-    }).then((data) => console.log(data));
+    });
+  let respdata = await res.json();
+  console.log(respdata)
 
-    console.log(data)
-  } catch (TypeError) {
-    return
-  }
-
-  if (data != null) {
+  if (respdata != null) {
     const overlay = document.createElement("button");
     overlay.setAttribute('onclick', 'alert("button")')
     overlay.setAttribute('type', 'button')
