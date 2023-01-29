@@ -133,22 +133,4 @@ window.onload = async (event) => {
     console.log(uwu)
     recursive_find_replace(document.body, uwu);
   }
-
-  if (respdata != null) {
-    const overlay = document.createElement("button");
-    overlay.setAttribute('onclick', 'alert("button")')
-    overlay.setAttribute('type', 'button')
-    const fill = document.createElement("div")
-    fill.setAttribute('id', 'overlay')
-    // overlay.id = "overlay"
-    // let c = "position: fixed; margin: auto; z-index: 999; width: 50px; height: 50px; -webkit - border - radius: 25px; -moz - border - radius: 25px; border - radius: 25px; background: blue; foreground: red"
-    // let c = "background: #fff; position: fixed; top: 0; left: 0; width: 100%; z-index: 999px; box-shadow: 0px 0px 6px 0px";  // rgba(0, 0, 0, 0.5);"
-
-    // overlay.setAttribute('style', c)
-
-    const body = document.querySelector('body');
-    body.insertBefore(overlay, body.children[0])
-    overlay.appendChild(fill)
-    // body.insertAdjacentElement("afterend", overlay);
-  }
 };
