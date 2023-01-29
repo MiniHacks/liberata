@@ -5,7 +5,13 @@ const URL = "http://localhost:8000";
 // const URL = "https://project2023library-qwqi2iy3qa-uc.a.run.app";
 
 window.onload = async (event) => {
-  let data = { text: document.body.innerText, zipcode: "55414" };
+  let zipcode = await chrome.storage.sync.get(["zipcode"]);
+  if (zipcode == null) {
+    zipcode = "55414";
+  } else {
+    zipcode = zipcode.zipcode;
+  }
+  let data = { text: document.body.innerText, zipcode };
 
   const common_fetch_params = {
     mode: "cors", // no-cors, *cors, same-origin
@@ -93,7 +99,7 @@ window.onload = async (event) => {
               method: "POST", // *GET, POST, PUT, DELETE, etc.
               body: JSON.stringify({
                 book_title: bookTitle,
-                zipcode: "55414"
+                zipcode
               }), // body data type must match "Content-Type" header,
               ...common_fetch_params
             });
