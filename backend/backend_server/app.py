@@ -31,18 +31,18 @@ class ExtractTextRequest(BaseModel):
 
 @app.post("/get_only_titles")
 def get_only_titles(request: ExtractTextRequest) -> list[str]:
-    return [
-    "David Copperfield",
-    "The Razor's Edge",
-    "The Fountainhead",
-    "Jane Eyre",
-    "Of Human Bondage"
-    ]
-    # book_titles = list(set(extract_book_titles(request.text)))
+    # return [
+    # "David Copperfield",
+    # "The Razor's Edge",
+    # "The Fountainhead",
+    # "Jane Eyre",
+    # "Of Human Bondage"
+    # ]
+    book_titles = list(set(extract_book_titles(request.text)))
 
-    # if book_titles == ["None"]:
-    #     return []
-    # return book_titles
+    if book_titles == ["None"]:
+        return []
+    return book_titles
 
 class BookDetailsRequest(BaseModel):
     book_title: str
@@ -50,14 +50,12 @@ class BookDetailsRequest(BaseModel):
 
 @app.post("/book_details")
 async def book_details(request: BookDetailsRequest) -> list[BookFromWorldCat]:
-    return await get_a_book(request.book_title, request.zipcode)
+    ret =  await get_a_book(request.book_title, request.zipcode)
+    return ret
 
 @app.post("/extract_titles")
 async def extract_text(request: ExtractTextRequest) -> dict[str, list[BookFromWorldCat]]:
     book_titles = list(set(extract_book_titles(request.text)))
-
-    print("extracted book titles:")
-    pprint(book_titles)
 
     if book_titles == ["None"]:
         return {}

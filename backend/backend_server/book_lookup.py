@@ -8,10 +8,14 @@ from urllib.parse import quote_plus
 from playwright.async_api import async_playwright, Page, ElementHandle
 import functools
 
-class BookFromWorldCat(BaseModel):
+class Library(BaseModel):
     distance_num_miles: float
     distance_str: str
     library_name: str
+
+
+class BookFromWorldCat(BaseModel):
+    available_at: list[Library]
     book_title: str
     book_author: str
 
@@ -57,7 +61,7 @@ async def get_a_book(book_title: str, zip_code: str | None) -> list[BookFromWorl
 
             await page.close()
             
-            libraries = []
+            book: List[BookFromWorldCat] = []
             for page in pages:
                 title = await page.wait_for_selector("#__next > div > div > main > div > div > div > div > h1 > div > span")
                 book_title: str = await title.inner_text()
@@ -68,6 +72,8 @@ async def get_a_book(book_title: str, zip_code: str | None) -> list[BookFromWorl
                 else:
                     book_author: str = "author not found ???"
 
+
+                libraries: List[Library] = []
                 list = await page.wait_for_selector("#__next > div > div > main > div > div > div:nth-child(2) > div > div > ul")
                 await list.wait_for_selector("li > div > div > div")
                 libraries_info = await list.query_selector_all("li > div > div > div")
@@ -77,18 +83,22 @@ async def get_a_book(book_title: str, zip_code: str | None) -> list[BookFromWorl
 
                     library_name: str = await title.inner_text()
                     distance: str = await distance.inner_text()
-                    distance_num_miles = float(distance.removesuffix(" miles").replace(",", "").strip())
+                    distance_num_miles = float(distance.removesuffix(" miles").removesuffix(" mile").replace(",", "").strip())
 
 
-
-                    libraries.append(BookFromWorldCat(
+                    libraries.append(Library(
                         distance_num_miles=distance_num_miles,
-                        distance_str = distance,
-                        library_name = library_name,
-                        book_title = book_title,
-                        book_author = book_author
+                        distance_str= distance,
+                        library_name=library_name
                     ))
+
+
+                libraries.sort(key=lambda x: x.distance_num_miles)
+                book.append(BookFromWorldCat(
+                    book_title = book_title,
+                    book_author = book_author,
+                    available_at=libraries
+                ))
                 await page.close()
             
-    libraries.sort(key=lambda x: x.distance_num_miles)
-    return libraries
+    return book
