@@ -4,7 +4,7 @@ console.log("Parsing Site Info for Library Books.");
 window.onload = async (event) => {
   let data = { text: document.body.innerText };
 
-  let res = await fetch("http://localhost:8000/extract_titles", {
+  let res = await fetch("http://localhost:8000/get_only_titles", {
     method: "POST", // *GET, POST, PUT, DELETE, etc.
     mode: "cors", // no-cors, *cors, same-origin
     cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
@@ -25,11 +25,48 @@ window.onload = async (event) => {
       console.log(node)
       if (node.nodeType === Node.TEXT_NODE) {
         var text = node.nodeValue;
-        var boldText = `<span style='background-color: pink'>${find}</span>`;
+
+        let random_ass_id = "xxxxxxxxxxxxxxx".replace(/x/g, () => (Math.floor(Math.random() * 36)).toString(36));
+        var boldText = `<span style='background-color: pink' id='${random_ass_id}'>${find}</span>`;
         var newHtml = text.replace(find, boldText);
         var newNode = document.createElement('span');
         newNode.innerHTML = newHtml;
         parent.replaceChild(newNode, node);
+
+        let dafunc = () => {
+          let textNode = document.getElementById(random_ass_id);
+          let bookTitle = find;
+            const node = document.createElement("div");
+            node.innerHTML = `
+            <div class="card" style="position: absolute; z-index: 100" id="${random_ass_id}-modal">
+              <button class="delete" style="position: absolute; top: 0; right: 0; margin: 5px" id="${random_ass_id}-deletebtn"></button>
+              <div class="card-content">
+                  <div class="media-content">
+                    <p class="title is-4">${find}</p>
+                    <p class="subtitle is-6">by author</p>
+                  </div>
+
+                  <div class="content">
+                    Available at the following libraries:
+                    <p> todo </p>
+                  </div>
+              </div>
+            </div>
+          `;
+
+            console.log("mouse over :(")
+
+            textNode.appendChild(node);
+
+            document.getElementById(`${random_ass_id}-deletebtn`).onclick = function () {
+              console.log("deleting ")
+              textNode.onmouseenter = dafunc;
+              textNode.removeChild(node);
+            };
+
+            textNode.onmouseover = null;
+        };
+        document.getElementById(random_ass_id).onmouseover = dafunc;
       } else {
 
         for (const child of node.childNodes) {
@@ -39,11 +76,9 @@ window.onload = async (event) => {
     }
   };
 
-  for (const uwu in respdata) {
-    if (respdata.hasOwnProperty(uwu)) {
-      // Get all elements in the document
-      recursive_find_replace(document.body, uwu);
-    }
+  for (const uwu of respdata) {
+    // Get all elements in the document
+    recursive_find_replace(document.body, uwu);
   }
 
   if (respdata != null) {

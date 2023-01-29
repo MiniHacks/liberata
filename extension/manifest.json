@@ -20,7 +20,8 @@
                 "content.js"
             ],
             "css": [
-                "styles.css"
+                "styles.css",
+                "bulma.min.css"
             ]
         }
     ],
@@ -28,7 +29,9 @@
         "default_title": "Test Extension"
     },
     "permissions": [
+        "tabs",
         "activeTab",
-        "storage"
+        "storage",
+        "scripting"
     ]
 }
