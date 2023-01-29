@@ -26,8 +26,8 @@ window.addEventListener("load", function () {
       elem.classList.remove("is-danger");
       elem.classList.add("is-success");
       elem.innerText = "Yes";
-      zipper.value = undefined;
-      chrome.storage.sync.set({ "zipcode": undefined });
+      zipper.value = "";
+      chrome.storage.sync.set({ "zipcode": "" });
     }
     active = !active;
     zipper.disabled = active;
