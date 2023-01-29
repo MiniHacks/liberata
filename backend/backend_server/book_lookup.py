@@ -12,6 +12,7 @@ class Library(BaseModel):
     distance_num_miles: float
     distance_str: str
     library_name: str
+    link_to_borrow: str | None
 
 
 class BookFromWorldCat(BaseModel):
@@ -44,9 +45,9 @@ async def get_a_book(book_title: str, zip_code: str | None) -> list[BookFromWorl
             except TimeoutError:
                 print(f"uh oh timed out on {book_title}")
                 return []
-            if btn := await page.wait_for_selector("#onetrust-accept-btn-handler", timeout=1000.0):
+            if btn := await page.wait_for_selector("#onetrust-accept-btn-handler", timeout=5000.0):
                 await btn.click()
-            list = await page.wait_for_selector("main > div > div > ol", timeout = 1000.0)
+            list = await page.wait_for_selector("main > div > div > ol", timeout = 5000.0)
             if list is None:
                 return []
             links = await list.query_selector_all("li > div > div > div > div > div > h2 > div > a")
@@ -70,7 +71,6 @@ async def get_a_book(book_title: str, zip_code: str | None) -> list[BookFromWorl
                 else:
                     book_author: str = "author not found ???"
 
-
                 libraries: List[Library] = []
                 list = await page.wait_for_selector("#__next > div > div > main > div > div > div:nth-child(2) > div > div > ul")
                 await list.wait_for_selector("li > div > div > div")
@@ -78,6 +78,12 @@ async def get_a_book(book_title: str, zip_code: str | None) -> list[BookFromWorl
                 for library in libraries_info:
                     title: ElementHandle = await library.query_selector("a > p > strong")
                     distance: ElementHandle = await library.query_selector("div > div > p > strong")
+                    link: ElementHandle = await library.query_selector("div > div > a")
+
+                    if link is not None:
+                        link_to_borrow: str | None = "https://worldcat.org" + await link.get_attribute("href")
+                    else:
+                        link_to_borrow = None
 
                     library_name: str = await title.inner_text()
                     distance: str = await distance.inner_text()
@@ -87,7 +93,8 @@ async def get_a_book(book_title: str, zip_code: str | None) -> list[BookFromWorl
                     libraries.append(Library(
                         distance_num_miles=distance_num_miles,
                         distance_str= distance,
-                        library_name=library_name
+                        library_name=library_name,
+                        link_to_borrow=link_to_borrow
                     ))
 
 

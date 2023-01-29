@@ -52,7 +52,7 @@ window.onload = async (event) => {
 
 
           // 3. Produce the modal
-          console.log({top, left, ...rest})
+          console.log({ top, left, ...rest })
           const node = document.createElement("div");
           node.classList.add("card");
           node.setAttribute("style", `position: absolute; top: ${top}px; left: ${left}px; z-index: 100`);
@@ -98,7 +98,13 @@ window.onload = async (event) => {
 
             let book = json[0];
             document.getElementById(`${random_ass_id}-authornames`).innerHTML = book.book_author;
-            document.getElementById(`${random_ass_id}-librarylist`).innerHTML = book.available_at.map((library) => `<li>${library.library_name} (${library.distance_str})</li>`).join("");
+            document.getElementById(`${random_ass_id}-librarylist`).innerHTML = book.available_at.map((library) => {
+              let borrowhtml = '';
+              if (library.link_to_borrow) {
+                borrowhtml = `<a href="${library.link_to_borrow}"> Borrow :3 </a>`;
+              }
+              return `<li>${library.library_name} (${library.distance_str}) ${borrowhtml}</li>`;
+            }).join("");
           }
           )();
 
