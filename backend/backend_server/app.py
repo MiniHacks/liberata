@@ -1,5 +1,6 @@
 from pprint import pprint
 from fastapi import FastAPI
+from functools import cache
 from pydantic import BaseModel
 
 import asyncio
@@ -29,29 +30,49 @@ class ExtractTextRequest(BaseModel):
     text: str
     zipcode: str | None = None
 
+    class Config:
+        frozen = True
+
+get_title_hash = {}
+
 @app.post("/get_only_titles")
 def get_only_titles(request: ExtractTextRequest) -> list[str]:
-    # return [
-    # "David Copperfield",
-    # "The Razor's Edge",
-    # "The Fountainhead",
-    # "Jane Eyre",
-    # "Of Human Bondage"
-    # ]
-    book_titles = list(set(extract_book_titles(request.text)))
+    if request not in get_title_hash:
+        book_titles = list(set(extract_book_titles(request.text)))
 
-    if book_titles == ["None"]:
-        return []
-    return book_titles
+        if book_titles == ["None"]:
+            result = []
+        else:
+            result = book_titles
+    
+        print("adding to cache")
+        pprint(request)
+        get_title_hash[request] = result
+
+    else:
+        print("Cached!!!")
+
+    return get_title_hash[request]
 
 class BookDetailsRequest(BaseModel):
     book_title: str
     zipcode: str | None = None
 
+
+    class Config:
+        frozen = True
+
+
+get_book_details_cache = {}
 @app.post("/book_details")
 async def book_details(request: BookDetailsRequest) -> list[BookFromWorldCat]:
-    ret =  await get_a_book(request.book_title, request.zipcode)
-    return ret
+    if request not in get_book_details_cache:
+
+        get_book_details_cache[request] = await get_a_book(request.book_title, request.zipcode)
+    else:
+        print("cached!!!!!")
+    
+    return get_book_details_cache[request]
 
 @app.post("/extract_titles")
 async def extract_text(request: ExtractTextRequest) -> dict[str, list[BookFromWorldCat]]:

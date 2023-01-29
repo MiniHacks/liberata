@@ -37,7 +37,7 @@ async def get_a_book(book_title: str, zip_code: str | None) -> list[BookFromWorl
 
     async with async_playwright() as p:
         for browser_type in [p.chromium]:
-            browser = await browser_type.launch(headless=False)
+            browser = await browser_type.launch(headless=True)
             context = await browser.new_context()
             page = await context.new_page()
             try:
@@ -45,7 +45,7 @@ async def get_a_book(book_title: str, zip_code: str | None) -> list[BookFromWorl
             except TimeoutError:
                 print(f"uh oh timed out on {book_title}")
                 return []
-            if btn := await page.wait_for_selector("#onetrust-accept-btn-handler", timeout=5000.0):
+            if btn := await page.wait_for_selector("#onetrust-accept-btn-handler", timeout=000.0):
                 await btn.click()
             list = await page.wait_for_selector("main > div > div > ol", timeout = 5000.0)
             if list is None:
