@@ -2,6 +2,7 @@ import asyncio
 from typing import List
 from pydantic import BaseModel
 from urllib.parse import quote_plus
+import playwright
 from playwright.async_api import async_playwright, Page, ElementHandle
 import os
 
@@ -59,18 +60,22 @@ async def get_a_book(book_title: str, book_author: str | None, zip_code: str | N
                 return []
             if btn is None and (btn := await page.wait_for_selector("#onetrust-accept-btn-handler", timeout=1000.0)):
                 await btn.click()
-            list = await page.wait_for_selector("main > div > div > ol", timeout = 5000.0)
-            if list is None:
-                return []
-            links = await list.query_selector_all("li > div > div > div > div > div > h2 > div > a")
-            pages: List[Page] = []
-            for h, _ in zip(links, range(2)):
-                # Get page after a specific action (e.g. clicking a link)
-                async with context.expect_page() as new_page_info:
-                    await h.click(modifiers=["Control"])
-                pages.append(await new_page_info.value)
+            
+            try:
+                list = await page.wait_for_selector("main > div > div > ol", timeout = 5000.0)
+                if list is None:
+                    return []
+                links = await list.query_selector_all("li > div > div > div > div > div > h2 > div > a")
+                pages: List[Page] = []
+                for h, _ in zip(links, range(2)):
+                    # Get page after a specific action (e.g. clicking a link)
+                    async with context.expect_page() as new_page_info:
+                        await h.click(modifiers=["Control"])
+                    pages.append(await new_page_info.value)
 
-            await page.close()
+                await page.close()
+            except playwright._impl._api_types.TimeoutError:
+                pages = [page]
             
             book: List[BookFromWorldCat] = []
             for page in pages:
