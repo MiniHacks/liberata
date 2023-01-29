@@ -3,7 +3,7 @@ console.log("Parsing Site Info for Library Books.");
 
 window.onload = (event) => {
   const data = { text: document.body.innerText };
-  fetch("https://localhost:8000/extract_titles", {
+  fetch("http://localhost:8000/extract_titles", {
     method: "POST", // *GET, POST, PUT, DELETE, etc.
     mode: "cors", // no-cors, *cors, same-origin
     cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
