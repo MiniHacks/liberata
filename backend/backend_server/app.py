@@ -54,7 +54,16 @@ async def get_only_titles(request: ExtractTextRequest) -> list[BookIdeaRow]:
     ret = get_title_hash[request]
 
     ## Pre-caching
-    asyncio.gather(*[
+    def precaching(coros):
+        semaphore = asyncio.Semaphore(4)
+
+        async def wrapper(inner_coro):
+            async with semaphore:
+                await inner_coro
+
+        asyncio.gather(*[wrapper(coro) for coro in coros])
+
+    precaching([
         get_or_insert_cache_book_details(BookDetailsRequest(book_title=row.title, book_author=row.author, zipcode=request.zipcode))
         for row in ret
     ])
