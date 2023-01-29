@@ -35,15 +35,21 @@ async def get_a_book(book_title: str, zip_code: str | None) -> list[BookFromWorl
             browser = await browser_type.launch(headless=False)
             context = await browser.new_context()
             page = await context.new_page()
-            await page.goto(f'https://worldcat.org/search?q={url_encoded_book_title}')
+            try:
+                await page.goto(f'https://worldcat.org/search?q={url_encoded_book_title}')
+            except TimeoutError:
+                print(f"uh oh timed out on {book_title}")
+                return []
             await asyncio.sleep(1)
             if btn := await page.query_selector("#onetrust-accept-btn-handler"):
                 await btn.click()
                 await asyncio.sleep(1)
             list = await page.query_selector("main > div > div > ol")
+            if list is None:
+                return []
             links = await list.query_selector_all("li > div > div > div > div > div > h2 > div > a")
             pages: List[Page] = []
-            for h in links:
+            for h, _ in zip(links, range(2)):
                 # Get page after a specific action (e.g. clicking a link)
                 async with context.expect_page() as new_page_info:
                     await h.click(modifiers=["Control"])
@@ -51,16 +57,19 @@ async def get_a_book(book_title: str, zip_code: str | None) -> list[BookFromWorl
 
             await page.close()
             
-
             libraries = []
             for page in pages:
-                title = await page.query_selector("#__next > div > div > main > div > div > div > div > h1 > div > span")
+                title = await page.wait_for_selector("#__next > div > div > main > div > div > div > div > h1 > div > span")
                 book_title: str = await title.inner_text()
 
                 author = await page.query_selector("#__next > div > div > main > div > div > div > div > span > span")
-                book_author: str = await author.inner_text()
+                if author:
+                    book_author: str = await author.inner_text()
+                else:
+                    book_author: str = "author not found ???"
 
-                list = await page.query_selector("#__next > div > div > main > div > div > div:nth-child(2) > div > div > ul")
+                list = await page.wait_for_selector("#__next > div > div > main > div > div > div:nth-child(2) > div > div > ul")
+                await list.wait_for_selector("li > div > div > div")
                 libraries_info = await list.query_selector_all("li > div > div > div")
                 for library in libraries_info:
                     title: ElementHandle = await library.query_selector("a > p > strong")

@@ -1,3 +1,4 @@
+from pprint import pprint
 from fastapi import FastAPI
 from pydantic import BaseModel
 
@@ -31,6 +32,9 @@ class ExtractTextRequest(BaseModel):
 @app.post("/extract_titles")
 async def extract_text(request: ExtractTextRequest) -> dict[str, list[BookFromWorldCat]]:
     book_titles = list(set(extract_book_titles(request.text)))
+
+    print("extracted book titles:")
+    pprint(book_titles)
 
     if book_titles == ["None"]:
         return {}

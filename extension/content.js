@@ -5,20 +5,46 @@ window.onload = async (event) => {
   let data = { text: document.body.innerText };
 
   let res = await fetch("http://localhost:8000/extract_titles", {
-      method: "POST", // *GET, POST, PUT, DELETE, etc.
-      mode: "cors", // no-cors, *cors, same-origin
-      cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-      credentials: "same-origin", // include, *same-origin, omit
-      headers: {
-        "Content-Type": "application/json",
-        // 'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      redirect: "follow", // manual, *follow, error
-      referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-      body: JSON.stringify(data), // body data type must match "Content-Type" header
-    });
+    method: "POST", // *GET, POST, PUT, DELETE, etc.
+    mode: "cors", // no-cors, *cors, same-origin
+    cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+    credentials: "same-origin", // include, *same-origin, omit
+    headers: {
+      "Content-Type": "application/json",
+      // 'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    redirect: "follow", // manual, *follow, error
+    referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+    body: JSON.stringify(data), // body data type must match "Content-Type" header
+  });
   let respdata = await res.json();
   console.log(respdata)
+
+  let recursive_find_replace = (node, find, parent = null) => {
+    if (node.innerText?.includes(find) || node.nodeValue?.includes(find)) {
+      console.log(node)
+      if (node.nodeType === Node.TEXT_NODE) {
+        var text = node.nodeValue;
+        var boldText = `<span style='background-color: pink'>${find}</span>`;
+        var newHtml = text.replace(find, boldText);
+        var newNode = document.createElement('span');
+        newNode.innerHTML = newHtml;
+        parent.replaceChild(newNode, node);
+      } else {
+
+        for (const child of node.childNodes) {
+          recursive_find_replace(child, find, node)
+        }
+      }
+    }
+  };
+
+  for (const uwu in respdata) {
+    if (respdata.hasOwnProperty(uwu)) {
+      // Get all elements in the document
+      recursive_find_replace(document.body, uwu);
+    }
+  }
 
   if (respdata != null) {
     const overlay = document.createElement("button");
@@ -35,6 +61,6 @@ window.onload = async (event) => {
     const body = document.querySelector('body');
     body.insertBefore(overlay, body.children[0])
     overlay.appendChild(fill)
-  // body.insertAdjacentElement("afterend", overlay);
+    // body.insertAdjacentElement("afterend", overlay);
   }
 };
