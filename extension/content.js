@@ -115,7 +115,7 @@ window.onload = async (event) => {
         document.getElementById(`${random_ass_id}-librarylist`).innerHTML = book.available_at.map((library) => {
           let borrowhtml = '';
           if (library.link_to_borrow) {
-            borrowhtml = `<a href="${library.link_to_borrow}" target="_blank" rel="noopener noreferrer"> Borrow :3 </a>`;
+            borrowhtml = `<a href="${library.link_to_borrow}" target="_blank" rel="noopener noreferrer" style="all: initial; color: blue"> Borrow :3 </a>`;
           }
           return `<li>${library.library_name} (${library.distance_str}) ${borrowhtml}</li>`;
         }).join("");

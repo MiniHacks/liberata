@@ -39,7 +39,7 @@ async def get_a_book(book_title: str, book_author: str | None, zip_code: str | N
                 if btn := await page.wait_for_selector("#onetrust-accept-btn-handler", timeout=1000.0):
                     await btn.click()
                 
-                loc_selector = await page.wait_for_selector("#__next > header > nav > div > button#location-confirmer-desktop > span > div", timeout=2000.0)
+                loc_selector = await page.wait_for_selector("#location-confirmer-desktop", timeout=20000.0)
                 await loc_selector.click()
 
                 textbox = await page.wait_for_selector("div > div > div > div > div > div > input", timeout=500.0)
@@ -50,9 +50,10 @@ async def get_a_book(book_title: str, book_author: str | None, zip_code: str | N
                 await page.wait_for_selector("body > div.MuiAutocomplete-popper")
                 await textbox.press('Enter')
 
-                btn = await page.query_selector("body > div > div > div > div > div > button > span > div")
-                await btn.click()
-                
+                await page.keyboard.press('Tab')
+                await page.keyboard.press('Tab')
+                await textbox.press('Enter')
+
             try:
                 await page.goto(f'https://worldcat.org/search?q={query}')
             except TimeoutError:
@@ -62,7 +63,7 @@ async def get_a_book(book_title: str, book_author: str | None, zip_code: str | N
                 await btn.click()
             
             try:
-                list = await page.wait_for_selector("main > div > div > ol", timeout = 5000.0)
+                list = await page.wait_for_selector("main > div > div > div > ol", timeout = 5000.0)
                 if list is None:
                     return []
                 links = await list.query_selector_all("li > div > div > div > div > div > h2 > div > a")
@@ -94,8 +95,9 @@ async def get_a_book(book_title: str, book_author: str | None, zip_code: str | N
                 libraries_info = await list.query_selector_all("li > div > div > div")
                 for library in libraries_info:
                     title: ElementHandle = await library.query_selector("a > p > strong")
-                    distance: ElementHandle = await library.query_selector("div > div > p > strong")
-                    link: ElementHandle = await library.query_selector("div > div > a")
+                    distance: ElementHandle = await library.query_selector("div > p > a")
+                    # await asyncio.sleep(100)
+                    link: ElementHandle = await library.query_selector("div > div > div > a")
 
                     if link is not None:
                         link_to_borrow: str | None = "https://worldcat.org" + await link.get_attribute("href")
